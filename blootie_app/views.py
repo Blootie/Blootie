@@ -347,10 +347,10 @@ def gestionar_actividades(request):
         try:
             # Obtenemos los datos enviados desde el fetch en activities.html
             actividad_id = request.POST.get('actividad_id')
-            esta_activa_str = request.POST.get('esta_activa')
+            esta_activa_str = request.POST.get('visible')
             
             # Convertimos el string 'true'/'false' del JS a booleano real
-            es_visible = (esta_activa_str == 'true')
+            es_visible = (visible_str == 'true')
             
             # Buscamos la actividad y actualizamos
             actividad = get_object_or_404(ConfiguracionActividad, id=actividad_id)
