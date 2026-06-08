@@ -13,6 +13,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
+from django.http import JsonResponse
+
 
 from .forms import LoginForm
 from .models import Perfil, Actividad, Progreso, Logro, ConfiguracionActividad, Cuento
@@ -386,6 +388,15 @@ def gestionar_actividades(request):
 def menu_juegos(request):
     juegos_permitidos = ConfiguracionActividad.objects.filter(esta_activa=True)
     return render(request, 'estudiante/menu.html', {'juegos': juegos_permitidos})
+
+@csrf_exempt
+def toggle_actividad(request, actividad_id):
+    if request.method == 'POST':
+        config = get_object_or_404(ConfiguracionActividad, id=actividad_id)
+        # Cambiamos el estado (si está True pasa a False y viceversa)
+        config.esta_activa = not config.esta_activa
+        config.save()
+        return JsonResponse({'esta_activa': config.esta_activa})
 
 @login_required
 def student_dashboard(request):
