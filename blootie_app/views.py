@@ -69,7 +69,7 @@ def require_role(user, allowed):
     return role in allowed
 
 def home(request):
-    actividades = Actividad.objects.filter(visual=True)
+    actividades = Actividad.objects.all() 
     return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
 
 def login_view(request):
