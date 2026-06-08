@@ -342,37 +342,31 @@ def detalle_alumno(request, alumno_id):
 
 @csrf_exempt
 def gestionar_actividades(request):
-
     if request.method == 'POST':
         try:
             actividad_id = request.POST.get('actividad_id')
-            visible_str = request.POST.get('visible')
+            # Cambia 'visible' por 'esta_activa' aquí
+            estado_str = request.POST.get('esta_activa') 
 
-            es_visible = (visible_str == 'true')
+            es_visible = (estado_str == 'true')
 
-            actividad = get_object_or_404(
-                ConfiguracionActividad,
-                id=actividad_id
-            )
+            actividad = get_object_or_404(ConfiguracionActividad, id=actividad_id)
 
             actividad.esta_activa = es_visible
             actividad.save()
 
             return JsonResponse({
-                'status': 'success',
+                'status': 'success', 
                 'esta_activa': actividad.esta_activa
             })
 
         except Exception as e:
             return JsonResponse({
-                'status': 'error',
+                'status': 'error', 
                 'message': str(e)
             }, status=400)
 
-    return JsonResponse({
-        'status': 'error',
-        'message': 'Método no permitido'
-    }, status=405)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 @login_required
 def menu_juegos(request):
