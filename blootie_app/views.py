@@ -295,6 +295,15 @@ def lista_alumnos(request):
     }
     return render(request, 'teacher/students.html', context)
 
+def cambiar_avatar_alumno(request, alumno_id):
+    perfil = get_object_or_404(Perfil, id=alumno_id)
+    if request.method == 'POST':
+        # Aquí recibe el emoji que enviaste desde el formulario
+        perfil.avatar = request.POST.get('avatar_nuevo')
+        perfil.save()
+        return redirect('detalle_alumno', alumno_id=alumno_id)
+    return redirect('detalle_alumno', alumno_id=alumno_id)
+
 @login_required
 def detalle_alumno(request, alumno_id):
     alumno = get_object_or_404(Perfil, id=alumno_id, rol='estudiante')
