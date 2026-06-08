@@ -379,14 +379,26 @@ def menu_juegos(request):
     juegos_permitidos = ConfiguracionActividad.objects.filter(esta_activa=True)
     return render(request, 'estudiante/menu.html', {'juegos': juegos_permitidos})
 
-@csrf_exempt
-def toggle_actividad(request, actividad_id):
-    if request.method == 'POST':
-        config = get_object_or_404(ConfiguracionActividad, id=actividad_id)
-        # Cambiamos el estado (si está True pasa a False y viceversa)
-        config.esta_activa = not config.esta_activa
-        config.save()
-        return JsonResponse({'esta_activa': config.esta_activa})
+// Dentro de tu archivo activities.html, busca la función que dispara el switch
+function toggle_Actividad(id, esVisible) {
+    let formData = new FormData();
+    formData.append('actividad_id', id);
+    formData.append('visible', esVisible); // <--- ESTO DEBE COINCIDIR con tu views.py
+
+    fetch('/gestionar-actividades/', { // Asegúrate que esta URL coincida con tu urls.py
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}' // ¡CRUCIAL para que Django acepte el POST!
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            console.log("Cambio guardado");
+        }
+    });
+}
 
 @login_required
 def student_dashboard(request):
