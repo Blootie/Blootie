@@ -363,6 +363,7 @@ def gestionar_actividades(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    
 
 @login_required
 def menu_juegos(request):
