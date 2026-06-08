@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# --- PERFIL DE USUARIO ---
 class Perfil(models.Model):
     ROL_CHOICES = [
         ('admin', 'Administrador'),
