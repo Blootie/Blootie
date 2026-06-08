@@ -193,6 +193,21 @@
     </div>
 </div>
 
+<div class="card p-4 mt-3">
+    <h5>Cambiar Avatar del Alumno</h5>
+    <form method="POST" action="{% url 'cambiar_avatar_alumno' alumno.id %}">
+        {% csrf_token %}
+        <div class="d-flex gap-3">
+            <button type="submit" name="avatar_nuevo" value="🌈" class="btn btn-outline-secondary fs-3">🌈</button>
+            <button type="submit" name="avatar_nuevo" value="🐒" class="btn btn-outline-secondary fs-3">🐒</button>
+            <button type="submit" name="avatar_nuevo" value="🤖" class="btn btn-outline-secondary fs-3">🤖</button>
+            <button type="submit" name="avatar_nuevo" value="🦄" class="btn btn-outline-secondary fs-3">🦄</button>
+            <button type="submit" name="avatar_nuevo" value="🐱" class="btn btn-outline-secondary fs-3">🐱</button>
+            <button type="submit" name="avatar_nuevo" value="🦁" class="btn btn-outline-secondary fs-3">🦁</button>
+        </div>
+    </form>
+</div>
+
 <div class="modal fade" id="modalLogro" tabindex="-1" aria-labelledby="modalLogroLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content b-modal">
