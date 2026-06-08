@@ -156,6 +156,61 @@
             </div>
         </div>
 
+        <div class="card shadow-sm mb-4" style="border-radius: 24px; border: 2px solid #E5E7EB; border-bottom: 8px solid #E5E7EB;">
+    <div class="card-body p-4">
+        <h5 style="font-weight: 900; color: #374151; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Artist%20palette/3D/artist_palette_3d.png" style="width: 35px;" alt="Paleta">
+            Cambiar Avatar del Estudiante
+        </h5>
+        
+        <form method="POST" action="{% url 'cambiar_avatar_alumno' alumno.id %}">
+            {% csrf_token %}
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <button type="submit" name="avatar_nuevo" value="🌈" class="btn-avatar-sticker">🌈</button>
+                <button type="submit" name="avatar_nuevo" value="🤖" class="btn-avatar-sticker">🤖</button>
+                <button type="submit" name="avatar_nuevo" value="🐒" class="btn-avatar-sticker">🐒</button>
+                <button type="submit" name="avatar_nuevo" value="🦄" class="btn-avatar-sticker">🦄</button>
+                <button type="submit" name="avatar_nuevo" value="🐱" class="btn-avatar-sticker">🐱</button>
+                <button type="submit" name="avatar_nuevo" value="🦁" class="btn-avatar-sticker">🦁</button>
+                <button type="submit" name="avatar_nuevo" value="🦊" class="btn-avatar-sticker">🦊</button>
+                <button type="submit" name="avatar_nuevo" value="🐼" class="btn-avatar-sticker">🐼</button>
+                <button type="submit" name="avatar_nuevo" value="🐉" class="btn-avatar-sticker">🐉</button>
+                <button type="submit" name="avatar_nuevo" value="👨‍🚀" class="btn-avatar-sticker">👨‍🚀</button>
+                <button type="submit" name="avatar_nuevo" value="👾" class="btn-avatar-sticker">👾</button>
+                <button type="submit" name="avatar_nuevo" value="🥳" class="btn-avatar-sticker">🥳</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .btn-avatar-sticker {
+        background: white;
+        border: 2px solid #E5E7EB;
+        border-bottom: 5px solid #E5E7EB;
+        border-radius: 18px;
+        font-size: 2.2rem;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-avatar-sticker:hover {
+        background: #F0F9FF;
+        border-color: #1CB0F6;
+        border-bottom-color: #1899D6;
+        transform: translateY(-3px);
+    }
+    .btn-avatar-sticker:active {
+        transform: translateY(2px);
+        border-bottom-width: 0;
+    }
+</style>
+        
         <div class="b-card mt-2">
             <h5 class="b-subtitle mb-4">
                 <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Chart%20increasing/3D/chart_increasing_3d.png" style="width: 32px; vertical-align: bottom;" alt="Gráfico"> 
@@ -191,21 +246,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="card p-4 mt-3">
-    <h5>Cambiar Avatar del Alumno</h5>
-    <form method="POST" action="{% url 'cambiar_avatar_alumno' alumno.id %}">
-        {% csrf_token %}
-        <div class="d-flex gap-3">
-            <button type="submit" name="avatar_nuevo" value="🌈" class="btn btn-outline-secondary fs-3">🌈</button>
-            <button type="submit" name="avatar_nuevo" value="🐒" class="btn btn-outline-secondary fs-3">🐒</button>
-            <button type="submit" name="avatar_nuevo" value="🤖" class="btn btn-outline-secondary fs-3">🤖</button>
-            <button type="submit" name="avatar_nuevo" value="🦄" class="btn btn-outline-secondary fs-3">🦄</button>
-            <button type="submit" name="avatar_nuevo" value="🐱" class="btn btn-outline-secondary fs-3">🐱</button>
-            <button type="submit" name="avatar_nuevo" value="🦁" class="btn btn-outline-secondary fs-3">🦁</button>
-        </div>
-    </form>
 </div>
 
 <div class="modal fade" id="modalLogro" tabindex="-1" aria-labelledby="modalLogroLabel" aria-hidden="true">
