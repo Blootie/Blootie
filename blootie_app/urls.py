@@ -49,6 +49,8 @@ urlpatterns = [
     path('mercadito/', views.mercadito_view, name='mercadito'),
     path('juego-unir/', views.game_match, name='game_match'),
 
+    path('cambiar-avatar/<int:alumno_id>/', views.cambiar_avatar_alumno, name='cambiar_avatar_alumno'),
+
     path('configuracion/', views.configuracion_view, name='configuracion'),
 
 ]
