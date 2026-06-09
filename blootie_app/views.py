@@ -55,10 +55,6 @@ def require_role(user, allowed):
     role = 'profesor' if username.startswith('profe') else 'estudiante'
     return role in allowed
 
-def espiar_bd(request):
-    cantidad = Actividad.objects.count()
-    return HttpResponse(f"Hola, en la base de datos de 'Actividad' tengo {cantidad} registros.")
-
 def home(request): actividades = Actividad.objects.all() 
 return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
 
