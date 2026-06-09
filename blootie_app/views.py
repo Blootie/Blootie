@@ -57,6 +57,7 @@ def require_role(user, allowed):
 
 def home(request): actividades = Actividad.objects.all() 
 actividades = Actividad.objects.all().defer('visible')
+return render(request, 'home.html', {'actividades': actividades})
 
 def login_view(request):
     if request.user.is_authenticated: return redirect('redirect_by_role')
@@ -362,6 +363,16 @@ def configuracion_view(request):
     return render(request, 'teacher/configuracion.html', {
         'form_password': form_password
     })
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})
 
 @login_required
 def game_planas(request):
