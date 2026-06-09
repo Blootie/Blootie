@@ -147,12 +147,13 @@
         formData.append('esta_activa', estaActiva); 
 
         fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
+    method: 'POST',
+    headers: {
+        'X-CSRFToken': csrfToken
+    },
+    body: formData
+})
+            
         .then(response => {
             if (response.ok) {
                 if (estaActiva) {
