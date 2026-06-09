@@ -8,7 +8,7 @@ urlpatterns = [
     path('redirigir/', views.redirect_by_role, name='redirect_by_role'),
 
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
-    path('admin-panel/usuarios/', views.admin_users, name='admin_users'),
+    path('admin-panel/usuarios/', views.lista_alumnos, name='admin_users'),
     path('admin-panel/actividades/', views.admin_activities, name='admin_activities'),
 
     path('profesor-panel/', views.teacher_dashboard, name='teacher_dashboard'),
