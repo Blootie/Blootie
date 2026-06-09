@@ -267,12 +267,16 @@ def menu_juegos(request):
 
 @login_required
 def student_dashboard(request):
+    # --- AGREGA ESTA LÍNEA AQUÍ ---
+    sincronizar_juegos_db() 
+    # ------------------------------
+    
     progreso = Progreso.objects.filter(usuario=request.user).count() 
     puntaje = Progreso.objects.filter(usuario=request.user).aggregate(total=Sum('puntaje'))['total'] or 0
     logros = Logro.objects.filter(usuario=request.user).count()
     
+    # Ahora que ya se sincronizó, esto debería encontrar los juegos
     juegos_activos = ConfiguracionActividad.objects.filter(esta_activa=True)
-    
     permitidos = [juego.nombre for juego in juegos_activos]
 
     context = {
@@ -280,7 +284,7 @@ def student_dashboard(request):
         'puntaje': puntaje, 
         'logros': logros, 
         'juegos': juegos_activos,
-        'permitidos': permitidos, +
+        'permitidos': permitidos,
     }
     return render(request, 'student/dashboard.html', context)
 
