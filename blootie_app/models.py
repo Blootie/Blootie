@@ -85,7 +85,6 @@ class Logro(models.Model):
 
 class ConfiguracionActividad(models.Model):
     nombre = models.CharField(max_length=100)
-    visible = models.BooleanField(default=True)
     slug = models.SlugField(unique=True)
     esta_activa = models.BooleanField(default=True)
     
