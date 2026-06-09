@@ -270,13 +270,17 @@ def student_dashboard(request):
     progreso = Progreso.objects.filter(usuario=request.user).count() 
     puntaje = Progreso.objects.filter(usuario=request.user).aggregate(total=Sum('puntaje'))['total'] or 0
     logros = Logro.objects.filter(usuario=request.user).count()
+    
     juegos_activos = ConfiguracionActividad.objects.filter(esta_activa=True)
+    
+    permitidos = [juego.nombre for juego in juegos_activos]
 
     context = {
         'progreso': progreso,  
         'puntaje': puntaje, 
         'logros': logros, 
-        'juegos': juegos_activos 
+        'juegos': juegos_activos,
+        'permitidos': permitidos, +
     }
     return render(request, 'student/dashboard.html', context)
 
