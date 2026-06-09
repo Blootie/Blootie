@@ -340,49 +340,29 @@ def detalle_alumno(request, alumno_id):
     }
     return render(request, 'teacher/detalle_alumno.html', context)
 
-@csrf_exempt 
-@login_required
+@csrf_exempt
 def gestionar_actividades(request):
-    nombres_correctos = [
-        'Vocales', 'Matemáticas', 'Colores', 'Animales', 
-        'Familia', 'Valores', 'Cuerpo', 'Memoria',
-        'Mercadito', 'Unir', 'Plana'
-    ]
-    
-    for nombre in nombres_correctos:
-        try:
-            if not ConfiguracionActividad.objects.filter(nombre=nombre).exists():
-                ConfiguracionActividad.objects.create(
-                    nombre=nombre, 
-                    esta_activa=True,
-                    slug=nombre.lower().replace('á', 'a').replace('é', 'e')
-                )
-        except Exception:
-            pass
-
     if request.method == 'POST':
-        actividad_id = request.POST.get('actividad_id')
-        esta_activa_str = request.POST.get('esta_activa')
+        try:
+            # Estos nombres deben ser IGUALES a los que pusiste en formData.append
+            actividad_id = request.POST.get('actividad_id')
+            esta_activa_str = request.POST.get('esta_activa') 
 
-        if actividad_id:
+            # Convertir string 'true'/'false' a booleano
+            es_visible = (esta_activa_str == 'true')
+
             actividad = get_object_or_404(ConfiguracionActividad, id=actividad_id)
 
-            if esta_activa_str is not None:
-                actividad.esta_activa = (esta_activa_str == 'true')
-            else:
-                actividad.esta_activa = not actividad.esta_activa
-
+            # ESTO DEBE COINCIDIR con el nombre del campo en tu models.py
+            actividad.esta_activa = es_visible 
             actividad.save()
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or esta_activa_str is not None:
-                from django.http import JsonResponse
-                return JsonResponse({'status': 'ok', 'esta_activa': actividad.esta_activa})
+            return JsonResponse({'status': 'success', 'esta_activa': actividad.esta_activa})
 
-        return redirect('gestionar_actividades')
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-    actividades = ConfiguracionActividad.objects.all().order_by('nombre')
-    # ERROR CORREGIDO AQUÍ: Cambiado 'activities' por 'actividades'
-    return render(request, 'teacher/activities.html', {'actividades': actividades})
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 @login_required
 def menu_juegos(request):
