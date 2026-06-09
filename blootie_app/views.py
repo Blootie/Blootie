@@ -60,7 +60,7 @@ def espiar_bd(request):
     return HttpResponse(f"Hola, en la base de datos de 'Actividad' tengo {cantidad} registros.")
 
 def home(request): actividades = Actividad.objects.all() 
-    return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
+return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
 
 def login_view(request):
     if request.user.is_authenticated: return redirect('redirect_by_role')
