@@ -95,29 +95,6 @@ def teacher_dashboard(request):
         'logros': Logro.objects.count(),
     })
 
-# --- GESTIÓN DE ACTIVIDADES (CORREGIDO) ---
-@csrf_exempt
-def gestionar_actividades(request):
-    if request.method == 'POST':
-        try:
-            actividad_id = request.POST.get('actividad_id')
-            estado_str = request.POST.get('esta_activa') 
-            es_visible = (estado_str == 'true')
-
-            actividad = get_object_or_404(ConfiguracionActividad, id=actividad_id)
-            actividad.esta_activa = es_visible 
-            actividad.save()
-            return JsonResponse({'status': 'success', 'esta_activa': actividad.esta_activa})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
-
-# --- VISTAS DE ESTUDIANTE (TODOS LOS FILTROS CORREGIDOS A 'esta_activa') ---
-@login_required
-def student_dashboard(request):
-    juegos_activos = ConfiguracionActividad.objects.filter(esta_activa=True)
-    return render(request, 'student/dashboard.html', {'juegos': juegos_activos})
-
 @login_required
 def game_bubbles(request): 
     if not ConfiguracionActividad.objects.filter(nombre='Vocales', esta_activa=True).exists() and not request.user.is_superuser:
