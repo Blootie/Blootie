@@ -55,12 +55,12 @@ def require_role(user, allowed):
     role = 'profesor' if username.startswith('profe') else 'estudiante'
     return role in allowed
 
-def home(request):
-    todas = ConfiguracionActividad.objects.all()
-    print(f"DEBUG: Encontré {todas.count()} objetos en la base de datos.")
-    
-    actividades = ConfiguracionActividad.objects.filter(esta_activa=True)
-    return render(request, 'home.html', {'actividades': actividades})
+def espiar_bd(request):
+    cantidad = Actividad.objects.count()
+    return HttpResponse(f"Hola, en la base de datos de 'Actividad' tengo {cantidad} registros.")
+
+def home(request): actividades = Actividad.objects.all() 
+    return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
 
 def login_view(request):
     if request.user.is_authenticated: return redirect('redirect_by_role')
