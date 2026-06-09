@@ -57,8 +57,8 @@ def require_role(user, allowed):
 
 # --- VISTAS PRINCIPALES ---
 def home(request):
-    actividades_activas = ConfiguracionActividad.objects.filter(esta_activa=True)
-    return render(request, 'home.html', {'actividades': actividades_activas})
+    actividades = ConfiguracionActividad.objects.filter(esta_activa=True)
+    return render(request, 'home.html', {'actividades': actividades})
 
 def login_view(request):
     if request.user.is_authenticated: return redirect('redirect_by_role')
