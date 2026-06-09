@@ -300,10 +300,6 @@ def sincronizar_juegos_db():
     for nombre in nombres_requeridos:
         ConfiguracionActividad.objects.get_or_create(nombre=nombre)
 
-        if not juego.esta_activa:
-            juego.esta_activa = True
-            juego.save()
-
 @login_required
 def canciones_list(request):
     return render(request, 'student/songs_list.html', {'canciones': MODULES_CANCIONES.values()})
