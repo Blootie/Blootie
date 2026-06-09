@@ -55,9 +55,8 @@ def require_role(user, allowed):
     role = 'profesor' if username.startswith('profe') else 'estudiante'
     return role in allowed
 
-# --- VISTAS PRINCIPALES ---
 def home(request):
-    actividades = ConfiguracionActividad.objects.filter(esta_activa=True)
+    actividades = Actividad.objects.all() 
     return render(request, 'home.html', {'actividades': actividades})
 
 def login_view(request):
