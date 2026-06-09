@@ -1,25 +1,17 @@
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.db.models import Count, Sum
-from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
-from django.utils.text import slugify
+from django.http import HttpResponseForbidden, Http404, JsonResponse, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import Http404
-from django.http import JsonResponse
-
 
 from .forms import LoginForm
 from .models import Perfil, Actividad, Progreso, Logro, ConfiguracionActividad, Cuento
 
-
+# --- MODULES Y MÓDULOS DE CANCIONES (SIN CAMBIOS) ---
 MODULES = {
     'vocales': {'emoji': '🔤', 'title': 'Vocales', 'gradient': 'gradient-pink', 'lead': 'Observa y repite las vocales: A, E, I, O, U.', 'cards': [('A', 'Avión ✈️'), ('E', 'Elefante 🐘'), ('I', 'Iglesia ⛪'), ('O', 'Oso 🐻'), ('U', 'Uvas 🍇')], 'logro': 'Explorador de vocales', 'detalle': 'Reconoció las vocales básicas.'},
     'numeros': {'emoji': '🔢', 'title': 'Números', 'gradient': 'gradient-blue', 'lead': 'Cuenta del 1 al 5 con apoyo visual.', 'cards': [('1', '🍎'), ('2', '🍎🍎'), ('3', '🍎🍎🍎'), ('4', '🍎🍎🍎🍎'), ('5', '🍎🍎🍎🍎🍎')], 'logro': 'Genio de los números', 'detalle': 'Contó números del 1 al 5.'},
@@ -49,39 +41,33 @@ MODULES_CANCIONES = {
     'c16': {'id': 'c16', 'title': 'Pin Pon', 'url': 'https://www.youtube.com/embed/RX0VtkQOddw'},
 }
 
+# --- LÓGICA DE ROLES Y REDIRECCIONES ---
 @login_required
 def redirect_by_role(request):
     username = request.user.username.lower()
-    if request.user.is_superuser:
-        return redirect('admin_dashboard')
-    if username.startswith('profe'):
-        return redirect('teacher_dashboard')
+    if request.user.is_superuser: return redirect('admin_dashboard')
+    if username.startswith('profe'): return redirect('teacher_dashboard')
     return redirect('student_dashboard')
 
 def require_role(user, allowed):
-    if user.is_superuser:
-        return True
+    if user.is_superuser: return True
     username = user.username.lower()
-    if username.startswith('profe'):
-        role = 'profesor'
-    else:
-        role = 'estudiante'
+    role = 'profesor' if username.startswith('profe') else 'estudiante'
     return role in allowed
 
+# --- VISTAS PRINCIPALES ---
 def home(request):
     actividades = Actividad.objects.all() 
     return render(request, 'home.html', {'actividades': actividades, 'modules': MODULES})
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('redirect_by_role')
+    if request.user.is_authenticated: return redirect('redirect_by_role')
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             login(request, form.get_user())
             return redirect('redirect_by_role')
-    else:
-        form = LoginForm(request)
+    else: form = LoginForm(request)
     return render(request, 'login.html', {'form': form})
 
 @login_required
@@ -89,10 +75,10 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+# --- VISTAS ADMIN Y TEACHER ---
 @login_required
 def admin_dashboard(request):
-    if not require_role(request.user, ['admin']):
-        return HttpResponseForbidden('Acceso denegado.')
+    if not require_role(request.user, ['admin']): return HttpResponseForbidden('Acceso denegado.')
     return render(request, 'admin/dashboard.html', {
         'total_usuarios': User.objects.count(),
         'total_profesores': Perfil.objects.filter(rol='profesor').count(),
@@ -101,102 +87,42 @@ def admin_dashboard(request):
     })
 
 @login_required
-def admin_users(request):
-    if not require_role(request.user, ['admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    return render(request, 'admin/users.html', {'usuarios': User.objects.all().order_by('-id')})
-
-@login_required
-def admin_activities(request):
-    if not require_role(request.user, ['admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    return render(request, 'admin/activities.html', {'actividades': Actividad.objects.all().order_by('-id')})
-
-@login_required
 def teacher_dashboard(request):
-    if not require_role(request.user, ['profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
+    if not require_role(request.user, ['profesor', 'admin']): return HttpResponseForbidden('Acceso denegado.')
     return render(request, 'teacher/dashboard.html', {
         'estudiantes': Perfil.objects.filter(rol='estudiante').count(),
         'progreso': Progreso.objects.count(),
         'logros': Logro.objects.count(),
     })
 
-@login_required
-def teacher_students(request):
-    if not require_role(request.user, ['profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    estudiantes = User.objects.filter(perfil__rol='estudiante').annotate(
-        actividades_realizadas=Count('progreso'),
-        puntaje_total=Sum('progreso__puntaje')
-    ).order_by('username')
-    return render(request, 'teacher/students.html', {'estudiantes': estudiantes})
-
-@login_required
-def teacher_activities(request):
-    if not require_role(request.user, ['profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    return render(request, 'teacher/activities.html', {'actividades': Actividad.objects.all().order_by('tipo', 'titulo')})
-
-
-def register(request):
+# --- GESTIÓN DE ACTIVIDADES (CORREGIDO) ---
+@csrf_exempt
+def gestionar_actividades(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user.first_name = user.username.capitalize() 
-            user.save()
+        try:
+            actividad_id = request.POST.get('actividad_id')
+            estado_str = request.POST.get('esta_activa') 
+            es_visible = (estado_str == 'true')
 
-            try:
-                profesor_asignado = User.objects.get(username='profe')
-            except User.DoesNotExist:
-                profesor_asignado = None
+            actividad = get_object_or_404(ConfiguracionActividad, id=actividad_id)
+            actividad.esta_activa = es_visible 
+            actividad.save()
+            return JsonResponse({'status': 'success', 'esta_activa': actividad.esta_activa})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-            Perfil.objects.create(
-                user=user, 
-                rol='estudiante', 
-                teacher=profesor_asignado,
-            )
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-        for field in form.fields.values():
-            field.help_text = None 
-            
-    return render(request, 'student/register.html', {'form': form})
-
+# --- VISTAS DE ESTUDIANTE (TODOS LOS FILTROS CORREGIDOS A 'esta_activa') ---
 @login_required
-def student_memory(request):
-    if not require_role(request.user, ['estudiante', 'profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    
-    if not ConfiguracionActividad.objects.filter(nombre='Memoria', esta_activa=True).exists() and not request.user.is_superuser:
-        messages.error(request, 'El juego de Memoria está cerrado por el profesor en este momento. 🔒')
-        return redirect('student_dashboard')
-
-    if request.method == 'POST':
-        Progreso.objects.create(usuario=request.user, activity='memoria', puntaje=10, detalle='Jugó memoria.')
-        Logro.objects.get_or_create(usuario=request.user, nombre='Mente brillante', defaults={'descripcion': 'Completó el juego de memoria.'})
-        messages.success(request, '¡Excelente! Registraste la memoria.')
-    return render(request, 'student/memory.html')
-
-@login_required
-def student_achievements(request):
-    if not require_role(request.user, ['estudiante', 'profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    return render(request, 'student/achievements.html', {'logros': Logro.objects.filter(usuario=request.user).order_by('-id')})
-
-# --- VISTAS DE JUEGOS CON CANDADOS UNIFICADOS ---
+def student_dashboard(request):
+    juegos_activos = ConfiguracionActividad.objects.filter(esta_activa=True)
+    return render(request, 'student/dashboard.html', {'juegos': juegos_activos})
 
 @login_required
 def game_bubbles(request): 
-    if not require_role(request.user, ['estudiante', 'profesor', 'admin']):
-        return HttpResponseForbidden('Acceso denegado.')
-    
     if not ConfiguracionActividad.objects.filter(nombre='Vocales', esta_activa=True).exists() and not request.user.is_superuser:
-        messages.error(request, 'El juego de Vocales (Burbujas) está cerrado por el profesor en este momento. 🔒')
+        messages.error(request, 'Cerrado. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_bubbles.html')
 
 @login_required
@@ -207,7 +133,6 @@ def game_numbers(request):
     if not ConfiguracionActividad.objects.filter(nombre='Matemáticas', esta_activa=True).exists() and not request.user.is_superuser:
         messages.error(request, 'El juego de Números está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_numbers.html')
 
 @login_required
@@ -218,7 +143,6 @@ def game_colors(request):
     if not ConfiguracionActividad.objects.filter(nombre='Colores', esta_activa=True).exists() and not request.user.is_superuser:
         messages.error(request, 'El juego de Colores está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_colors.html')
 
 @login_required
@@ -230,9 +154,7 @@ def game_animals(request):
         messages.error(request, 'El juego de Animales está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
 
-    context = {
-        'module': MODULES.get('animales')
-    }
+    context = {'module': MODULES.get('animales')}
     return render(request, 'student/game_animals.html', context)
 
 @login_required
@@ -243,7 +165,6 @@ def game_family(request):
     if not ConfiguracionActividad.objects.filter(nombre='Familia', esta_activa=True).exists() and not request.user.is_superuser:
         messages.error(request, 'El juego de la Familia está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_family.html')
 
 @login_required
@@ -254,7 +175,6 @@ def game_values(request):
     if not ConfiguracionActividad.objects.filter(nombre='Valores', esta_activa=True).exists() and not request.user.is_superuser:
         messages.error(request, 'El juego de Valores está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_values.html')
 
 @login_required
@@ -265,7 +185,6 @@ def game_body(request):
     if not ConfiguracionActividad.objects.filter(nombre='Cuerpo', esta_activa=True).exists() and not request.user.is_superuser:
         messages.error(request, 'El juego del Cuerpo está cerrado por el profesor en este momento. 🔒')
         return redirect('student_dashboard')
-
     return render(request, 'student/game_body.html')
 
 @login_required
@@ -368,27 +287,6 @@ def gestionar_actividades(request):
 def menu_juegos(request):
     juegos_permitidos = ConfiguracionActividad.objects.filter(esta_activa=True)
     return render(request, 'estudiante/menu.html', {'juegos': juegos_permitidos})
-
-// Dentro de tu archivo activities.html, busca la función que dispara el switch
-function toggle_Actividad(id, esVisible) {
-    let formData = new FormData();
-    formData.append('actividad_id', id);
-    formData.append('visible', esVisible); // <--- ESTO DEBE COINCIDIR con tu views.py
-
-    fetch('/gestionar-actividades/', { // Asegúrate que esta URL coincida con tu urls.py
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}' // ¡CRUCIAL para que Django acepte el POST!
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.status === 'success') {
-            console.log("Cambio guardado");
-        }
-    });
-}
 
 @login_required
 def student_dashboard(request):
