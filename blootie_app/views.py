@@ -55,9 +55,9 @@ def require_role(user, allowed):
     role = 'profesor' if username.startswith('profe') else 'estudiante'
     return role in allowed
 
-def home(request): actividades = Actividad.objects.all() 
-actividades = Actividad.objects.all().defer('visible')
-return render(request, 'home.html', {'actividades': actividades})
+def home(request):
+    actividades = Actividad.objects.all()
+    return render(request, 'home.html', {'actividades': actividades})
 
 def login_view(request):
     if request.user.is_authenticated: return redirect('redirect_by_role')
